@@ -1,13 +1,6 @@
-#
-# Copyright (C) 2021-2023 by ArchBots@Github, < https://github.com/ArchBots >.
-#
-# This file is part of < https://github.com/ArchBots/ArchMusic > project,
-# and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/ArchBots/ArchMusic/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
+#تعديل وتحديث مطور سورس ايثون
+# copyright @EITHON1 @V_V_G
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import random
 import string
 from ast import ExceptHandler
@@ -18,8 +11,10 @@ from pyrogram.types import (InlineKeyboardMarkup, InputMediaPhoto,
 from pytgcalls.exceptions import NoActiveGroupCall
 
 import config
-from config import BANNED_USERS, lyrical
+from config import (BANNED_USERS, lyrical, YAFA_NAME,
+                    YAFA_CHANNEL, CHANNEL_SUDO)
 from strings import get_command
+from strings.filters import command
 from ArchMusic import (Apple, Resso, SoundCloud, Spotify, Telegram,
                         YouTube, app)
 from ArchMusic.core.call import ArchMusic
@@ -36,10 +31,35 @@ from ArchMusic.utils.inline.playlist import botplaylist_markup
 from ArchMusic.utils.logger import play_logs
 from ArchMusic.utils.stream.stream import stream
 
-# Command
+
+force_btn = InlineKeyboardMarkup(
+    [
+        [
+            InlineKeyboardButton(   
+              text=f"{YAFA_NAME}", url=f"{YAFA_CHANNEL}",)                        
+        ],        
+    ]
+)
+async def check_is_joined(message):    
+    try:
+        userid = message.from_user.id
+        status = await app.get_chat_member(f"{CHANNEL_SUDO}", userid)
+        return True
+    except Exception:
+        await message.reply_text("**◇︰ عذرا، عليك الانضمام الى قناة البوت أولاً :**",reply_markup=force_btn)
+        return False
+      
+#تعديل وتحديث مطور سورس ايثون
+# copyright @EITHON1 @V_V_G
 PLAY_COMMAND = get_command("PLAY_COMMAND")
 
-
+#تعديل وتحديث مطور سورس ايثون
+# copyright @EITHON1 @V_V_G
+@app.on_message(
+    command(["شغل","تشغيل"])
+    & filters.group
+    & ~BANNED_USERS
+)
 @app.on_message(
     filters.command(PLAY_COMMAND)
     & filters.group
@@ -57,6 +77,8 @@ async def play_commnd(
     url,
     fplay,
 ):
+    if not await check_is_joined(message):
+        return
     mystic = await message.reply_text(
         _["play_2"].format(channel) if channel else _["play_1"]
     )
