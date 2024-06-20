@@ -103,22 +103,22 @@ AUTO_LEAVING_ASSISTANT = getenv("AUTO_LEAVING_ASSISTANT", "false")
 
 # Only  Links formats are  accepted for this Var value.
 CHANNEL_SUDO = getenv(
-    "CHANNEL_SUDO", "nxcsfbd"
+    "CHANNEL_SUDO", "Y_Y_Y_I"
 )  # ???? ????? ???? @
 YAFA_NAME = getenv(
-    "YAFA_NAME", "????. ???????????????????????"
+    "YAFA_NAME", "ﻟﹻۧۦ. مۧـﹻۧۦﹻۧﺂﺂࢪڵيـۧۦـۛنٰۧ"
 )  # ??? ?????
 YAFA_CHANNEL = getenv(
-   " YAFA_CHANNEL", "https://t.me/nxcsfbd"
+   " YAFA_CHANNEL", "https://t.me/Y_Y_Y_I"
 )  # ???? ?????
 SUDO_USER =getenv(
     "SUDO_USER", "https://t.me/LLPPL"
 )  # ???? ?????
 SUPPORT_CHANNEL = getenv(
-    "SUPPORT_CHANNEL", "https://t.me/nxcsfbd"
+    "SUPPORT_CHANNEL", "https://t.me/Y_Y_Y_I"
 )  # ???? ?????
 SUPPORT_GROUP = getenv(
-    "SUPPORT_GROUP", "https://t.me/nxcsfbd"
+    "SUPPORT_GROUP", "https://t.me/Y_Y_Y_I"
 )  # ???? ?????
 # Time after which you're assistant account will leave chats automatically.
 
