@@ -1,11 +1,13 @@
 #
-# Copyright (C) 2021-2023 by ArchBots@Github, < https://github.com/ArchBots >.
+# Copyright (C) 2024-present by TeamYukki@Github, < https://github.com/TeamYukki >.
 #
-# This file is part of < https://github.com/ArchBots/ArchMusic > project,
+# This file is part of < https://github.com/TeamYukki/ArchMusicBot > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/ArchBots/ArchMusic/blob/master/LICENSE >
+# Please see < https://github.com/TeamYukki/ArchMusicBot/blob/master/LICENSE >
 #
 # All rights reserved.
+# s
+
 
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardMarkup, Message
@@ -13,13 +15,13 @@ from pyrogram.types import InlineKeyboardMarkup, Message
 import config
 from config import BANNED_USERS
 from strings import get_command
+from strings.filters import command
 from ArchMusic import YouTube, app
 from ArchMusic.core.call import ArchMusic
 from ArchMusic.misc import db
 from ArchMusic.utils.database import get_loop
 from ArchMusic.utils.decorators import AdminRightsCheck
-from ArchMusic.utils.inline.play import (stream_markup,
-                                          telegram_markup)
+from ArchMusic.utils.inline.play import stream_markup, telegram_markup
 from ArchMusic.utils.stream.autoclear import auto_clean
 from ArchMusic.utils.thumbnails import gen_thumb
 
@@ -29,6 +31,11 @@ SKIP_COMMAND = get_command("SKIP_COMMAND")
 
 @app.on_message(
     filters.command(SKIP_COMMAND)
+    & filters.group
+    & ~BANNED_USERS
+)
+@app.on_message(
+    command(["تخطي"])
     & filters.group
     & ~BANNED_USERS
 )
@@ -52,30 +59,23 @@ async def skip(cli, message: Message, _, chat_id):
                             try:
                                 popped = check.pop(0)
                             except:
-                                return await message.reply_text(
-                                    _["admin_16"]
-                                )
+                                return await message.reply_text(_["admin_16"])
                             if popped:
-                                if (
-                                    config.AUTO_DOWNLOADS_CLEAR
-                                    == str(True)
-                                ):
-                                    await auto_clean(popped)
+                                await auto_clean(popped)
                             if not check:
                                 try:
                                     await message.reply_text(
                                         _["admin_10"].format(
                                             message.from_user.first_name
-                                        )
+                                        ),
+                                        disable_web_page_preview=True,
                                     )
                                     await ArchMusic.stop_stream(chat_id)
                                 except:
                                     return
                                 break
                     else:
-                        return await message.reply_text(
-                            _["admin_15"].format(count)
-                        )
+                        return await message.reply_text(_["admin_15"].format(count))
                 else:
                     return await message.reply_text(_["admin_14"])
             else:
@@ -88,11 +88,11 @@ async def skip(cli, message: Message, _, chat_id):
         try:
             popped = check.pop(0)
             if popped:
-                if config.AUTO_DOWNLOADS_CLEAR == str(True):
-                    await auto_clean(popped)
+                await auto_clean(popped)
             if not check:
                 await message.reply_text(
-                    _["admin_10"].format(message.from_user.first_name)
+                    _["admin_10"].format(message.from_user.first_name),
+                    disable_web_page_preview=True,
                 )
                 try:
                     return await ArchMusic.stop_stream(chat_id)
@@ -101,7 +101,8 @@ async def skip(cli, message: Message, _, chat_id):
         except:
             try:
                 await message.reply_text(
-                    _["admin_10"].format(message.from_user.first_name)
+                    _["admin_10"].format(message.from_user.first_name),
+                    disable_web_page_preview=True,
                 )
                 return await ArchMusic.stop_stream(chat_id)
             except:
@@ -109,15 +110,15 @@ async def skip(cli, message: Message, _, chat_id):
     queued = check[0]["file"]
     title = (check[0]["title"]).title()
     user = check[0]["by"]
+    user_id = message.from_user.id
     streamtype = check[0]["streamtype"]
     videoid = check[0]["vidid"]
+    duration_min = check[0]["dur"]
     status = True if str(streamtype) == "video" else None
     if "live_" in queued:
         n, link = await YouTube.video(videoid, True)
         if n == 0:
-            return await message.reply_text(
-                _["admin_11"].format(title)
-            )
+            return await message.reply_text(_["admin_11"].format(title))
         try:
             await ArchMusic.skip_stream(chat_id, link, video=status)
         except Exception:
@@ -135,9 +136,7 @@ async def skip(cli, message: Message, _, chat_id):
         db[chat_id][0]["mystic"] = run
         db[chat_id][0]["markup"] = "tg"
     elif "vid_" in queued:
-        mystic = await message.reply_text(
-            _["call_10"], disable_web_page_preview=True
-        )
+        mystic = await message.reply_text(_["call_10"], disable_web_page_preview=True)
         try:
             file_path, direct = await YouTube.download(
                 videoid,
@@ -156,8 +155,10 @@ async def skip(cli, message: Message, _, chat_id):
         run = await message.reply_photo(
             photo=img,
             caption=_["stream_1"].format(
-                user,
+                title[:27],
                 f"https://t.me/{app.username}?start=info_{videoid}",
+                duration_min,
+                user,
             ),
             reply_markup=InlineKeyboardMarkup(button),
         )
@@ -185,12 +186,12 @@ async def skip(cli, message: Message, _, chat_id):
         if videoid == "telegram":
             button = telegram_markup(_, chat_id)
             run = await message.reply_photo(
-                photo=config.TELEGRAM_AUDIO_URL
-                if str(streamtype) == "audio"
-                else config.TELEGRAM_VIDEO_URL,
-                caption=_["stream_3"].format(
-                    title, check[0]["dur"], user
+                photo=(
+                    config.TELEGRAM_AUDIO_URL
+                    if str(streamtype) == "audio"
+                    else config.TELEGRAM_VIDEO_URL
                 ),
+                caption=_["stream_3"].format(title, check[0]["dur"], user),
                 reply_markup=InlineKeyboardMarkup(button),
             )
             db[chat_id][0]["mystic"] = run
@@ -198,12 +199,12 @@ async def skip(cli, message: Message, _, chat_id):
         elif videoid == "soundcloud":
             button = telegram_markup(_, chat_id)
             run = await message.reply_photo(
-                photo=config.SOUNCLOUD_IMG_URL
-                if str(streamtype) == "audio"
-                else config.TELEGRAM_VIDEO_URL,
-                caption=_["stream_3"].format(
-                    title, check[0]["dur"], user
+                photo=(
+                    config.SOUNCLOUD_IMG_URL
+                    if str(streamtype) == "audio"
+                    else config.TELEGRAM_VIDEO_URL
                 ),
+                caption=_["stream_3"].format(title, check[0]["dur"], user),
                 reply_markup=InlineKeyboardMarkup(button),
             )
             db[chat_id][0]["mystic"] = run
@@ -214,8 +215,10 @@ async def skip(cli, message: Message, _, chat_id):
             run = await message.reply_photo(
                 photo=img,
                 caption=_["stream_1"].format(
-                    user,
+                    title[:27],
                     f"https://t.me/{app.username}?start=info_{videoid}",
+                    duration_min,
+                    user,
                 ),
                 reply_markup=InlineKeyboardMarkup(button),
             )
